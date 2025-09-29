@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Plus, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
 function AppSidebar() {
@@ -53,7 +53,7 @@ function AppSidebar() {
             </div>
           </div>
           <Button className={"mt-7 w-full"} size={"lg"}>
-            + New Chat
+            <Plus /> New Chat
           </Button>
         </div>
       </SidebarHeader>

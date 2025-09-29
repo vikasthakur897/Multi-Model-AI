@@ -1,16 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Divide } from "lucide-react";
+import ChatInputBox from "./_components/ChatInputBox";
 
 
 
 export default function Home() {
 
   return (
-    <>
-      <h2>Hello World</h2>
-      <Button>Click Me</Button>
-
-    </>
+    <div>
+      <ChatInputBox />
+      </div>
   );
 }
