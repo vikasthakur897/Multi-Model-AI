@@ -15,7 +15,7 @@ function Provider({
     defaultTheme="system"
     enableSystem
     disableTransitionOnChange
-    {...props}>{children}
+    {...props}>
     <SidebarProvider>
       <AppSidebar />
       
