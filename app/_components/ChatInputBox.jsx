@@ -14,7 +14,7 @@ function ChatInputBox() {
       </div>
 
       {/* Chat input at bottom */}
-      <div className="sticky bottom-0 left-0 w-full flex justify-center px-4 pb-4 bg-white/80 backdrop-blur-md">
+      <div className="sticky bottom-0 left-0 w-full flex justify-center px-4 pb-4">
         <div className="w-full border rounded-xl shadow-md max-w-2xl p-3 flex flex-col gap-3">
           {/* Input field */}
           <input

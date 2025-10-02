@@ -10,7 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { MessageSquare } from "lucide-react";
+import { Lock, MessageSquare } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 function AiMultiModels() {
   const [aiModelList, setAiModelList] = useState(AiModelList);
@@ -18,9 +19,7 @@ function AiMultiModels() {
   // Proper state update
   const onToggleChange = (modelName, value) => {
     setAiModelList((prev) =>
-      prev.map((m) =>
-        m.model === modelName ? { ...m, enable: value } : m
-      )
+      prev.map((m) => (m.model === modelName ? { ...m, enable: value } : m))
     );
   };
 
@@ -30,11 +29,16 @@ function AiMultiModels() {
         <div
           key={index}
           className={`flex flex-col border-r h-full overflow-auto
-            ${model.enable? 'flex-1 min-w-[400px]' : 'w-[100px] flex-none'}`}
+            ${model.enable ? "flex-1 min-w-[400px]" : "w-[100px] flex-none"}`}
         >
           <div className="flex w-full h-[70px] items-center justify-between border-b p-4">
             <div className="flex items-center gap-4">
-              <Image src={model.icon} alt={model.model} width={24} height={24} />
+              <Image
+                src={model.icon}
+                alt={model.model}
+                width={24}
+                height={24}
+              />
 
               {model.enable && (
                 <Select defaultValue={model.subModel[0]?.name}>
@@ -52,12 +56,20 @@ function AiMultiModels() {
               )}
             </div>
 
-         {model.enable ?   <Switch
-              checked={model.enable}
-              onCheckedChange={(v) => onToggleChange(model.model, v)}
-            />
-            : <MessageSquare onClick={() => onToggleChange(model.model, true)} /> }
+            {model.enable ? (
+              <Switch
+                checked={model.enable}
+                onCheckedChange={(v) => onToggleChange(model.model, v)}
+              />
+            ) : (
+              <MessageSquare
+                onClick={() => onToggleChange(model.model, true)}
+              />
+            )}
           </div>
+        {model.premium&&model.enable&&  <div className="flex items-center justify-center h-full">
+          <Button><Lock /> Upgrade to unlock</Button>
+          </div>}
         </div>
       ))}
     </div>
