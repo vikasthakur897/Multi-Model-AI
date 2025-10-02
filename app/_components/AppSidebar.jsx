@@ -10,12 +10,15 @@ import {
 } from "@/components/ui/sidebar";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Moon, Plus, Sun } from "lucide-react";
+import { Moon, Plus, Sun, User2, Zap } from "lucide-react";
 import { useTheme } from "next-themes";
+import { SignInButton, useUser } from "@clerk/nextjs";
+import UsageCreaditProgress from "./UsageCreaditProgress";
 
 function AppSidebar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { user } = useUser();
 
   useEffect(() => {
     setMounted(true);
@@ -61,9 +64,14 @@ function AppSidebar() {
             )}
           </div>
 
-          <Button className="mt-7 w-full" size="lg">
+        {user ? <Button className="mt-7 w-full" size="lg">
             <Plus /> New Chat
-          </Button>
+          </Button> : 
+          <SignInButton>
+            <Button className="mt-7 w-full" size="lg">
+            <Plus /> New Chat
+          </Button> 
+          </SignInButton> }  
         </div>
       </SidebarHeader>
 
@@ -71,18 +79,30 @@ function AppSidebar() {
         <SidebarGroup>
           <div className="p-3">
             <h2 className="font-bold text-lg">Chat</h2>
-            <p className="text-sm text-gray-400">
+          {!user&&<p className="text-sm text-gray-400">
               Sign in to start chatting with multiple models
-            </p>
+            </p>}  
           </div>
         </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>
         <div className="p-3 mb-10">
+        {!user ?  <SignInButton mode="modal">
           <Button className="w-full" size="lg">
             Sign In/Sign Up
           </Button>
+          </SignInButton> : 
+
+          <div >
+            <UsageCreaditProgress/>
+            <Button className={'w-full mb-3'}>
+             <Zap /> Upgrade Plan
+            </Button>
+          <Button className="flex w-full" variant={'ghost'}>
+            <User2 /> <h2>Settings</h2>
+          </Button>
+          </div> } 
         </div>
       </SidebarFooter>
     </Sidebar>

@@ -1,6 +1,7 @@
 import { Outfit, Space_Mono } from "next/font/google";
 import "./globals.css";
 import Provider from "./provider";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -21,6 +22,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
+    <ClerkProvider>
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${outfit.variable} ${spaceMono.variable} antialiased`}
@@ -28,5 +30,6 @@ export default function RootLayout({ children }) {
         <Provider>{children}</Provider>
       </body>
     </html>
+    </ClerkProvider>
   );
 }
