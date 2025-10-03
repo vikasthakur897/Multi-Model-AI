@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "./_components/AppSidebar";
@@ -8,9 +8,12 @@ import AppHeader from "./_components/AppHeader";
 import { useUser } from "@clerk/nextjs";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/config/FirebaseConfig";
+import { AiSelectedModelContext } from "@/context/AiSelectedModelContext";
+import { DefaultModel } from "@/shared/AiModels";
 
 function Provider({ children, ...props }) {
   const { user } = useUser();
+  const [aiSelectedModels, setAiSelectedModels] = useState(DefaultModel);
 
   useEffect(() => {
     if (user?.id && user?.primaryEmailAddress?.emailAddress) {
@@ -25,6 +28,8 @@ function Provider({ children, ...props }) {
 
       if (userSnap.exists()) {
         console.log("Existing User...");
+        const userInfo = userSnap.data();
+        setAiSelectedModels(userInfo?.selectedModelPref)
         return;
       }
 
@@ -52,6 +57,7 @@ function Provider({ children, ...props }) {
       disableTransitionOnChange
       {...props}
     >
+      <AiSelectedModelContext.Provider value={{aiSelectedModels, setAiSelectedModels}} >
       <SidebarProvider>
         <AppSidebar />
         <div className="w-full">
@@ -59,6 +65,7 @@ function Provider({ children, ...props }) {
           {children}
         </div>
       </SidebarProvider>
+      </AiSelectedModelContext.Provider>
     </NextThemesProvider>
   );
 }
