@@ -6,7 +6,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "./_components/AppSidebar";
 import AppHeader from "./_components/AppHeader";
 import { useUser } from "@clerk/nextjs";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/config/FirebaseConfig";
 import { AiSelectedModelContext } from "@/context/AiSelectedModelContext";
 import { DefaultModel } from "@/shared/AiModels";
@@ -22,6 +22,30 @@ function Provider({ children, ...props }) {
       CreateNewUser();
     }
   }, [user]);
+
+  useEffect(() => {
+    if(aiSelectedModels){
+       updatedAIModelSelectionPref()
+    }
+  },[aiSelectedModels])
+
+  const updatedAIModelSelectionPref= async() => {
+    const docRef = doc(db, "users", user?.primaryEmailAddress?.emailAddress);
+    
+        try {
+          await updateDoc(docRef, { selectedModelPref: aiSelectedModels });
+        } catch (error) {
+          if (error.code === "not-found") {
+            await setDoc(
+              docRef,
+              { selectedModelPref: aiSelectedModels },
+              { merge: true }
+            );
+          } else {
+            console.error("Firestore update error:", error);
+          }
+        }
+  }
 
   const CreateNewUser = async () => {
     try {
