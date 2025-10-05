@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "./_components/AppSidebar";
@@ -10,11 +10,12 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/config/FirebaseConfig";
 import { AiSelectedModelContext } from "@/context/AiSelectedModelContext";
 import { DefaultModel } from "@/shared/AiModels";
+import { UserDetailContext } from "@/context/UserDetailContext";
 
 function Provider({ children, ...props }) {
   const { user } = useUser();
   const [aiSelectedModels, setAiSelectedModels] = useState(DefaultModel);
-
+  const [userDetail, setUserDetail] = useState()
   useEffect(() => {
     if (user?.id && user?.primaryEmailAddress?.emailAddress) {
       CreateNewUser();
@@ -30,6 +31,7 @@ function Provider({ children, ...props }) {
         console.log("Existing User...");
         const userInfo = userSnap.data();
         setAiSelectedModels(userInfo?.selectedModelPref)
+        setUserDetail(userInfo)
         return;
       }
 
@@ -44,6 +46,7 @@ function Provider({ children, ...props }) {
 
       await setDoc(userRef, userData);
       console.log("New User Data Saved ✅");
+      setUserDetail(userData)
     } catch (err) {
       console.error("Error saving user:", err);
     }
@@ -57,6 +60,7 @@ function Provider({ children, ...props }) {
       disableTransitionOnChange
       {...props}
     >
+    <UserDetailContext.Provider value={{userDetail, setUserDetail}}>
       <AiSelectedModelContext.Provider value={{aiSelectedModels, setAiSelectedModels}} >
       <SidebarProvider>
         <AppSidebar />
@@ -66,6 +70,7 @@ function Provider({ children, ...props }) {
         </div>
       </SidebarProvider>
       </AiSelectedModelContext.Provider>
+      </UserDetailContext.Provider>
     </NextThemesProvider>
   );
 }
