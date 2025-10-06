@@ -6,12 +6,25 @@ import React, { useContext, useEffect, useState } from "react";
 import AiMultiModels from "./AiMultiModels";
 import { AiSelectedModelContext } from "@/context/AiSelectedModelContext";
 import axios from "axios";
+import { v4 as uuidv4 } from 'uuid';
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/config/FirebaseConfig";
+import { useUser } from "@clerk/nextjs";
 
 function ChatInputBox() {
   const [userInput, setUserInput] = useState("");
   const { aiSelectedModels,setAiSelectedModels, message, setMessage } = useContext(AiSelectedModelContext);
+  const [chatId, setChatId] = useState();
 
+    const { user } = useUser(); 
+  
+  useEffect(() => {
+    setChatId(uuidv4())
+  },[])
+  
   // alias for consistency
+
+
   const setMessages = setMessage;
 
   const handleSend = async () => {
@@ -96,8 +109,22 @@ function ChatInputBox() {
   };
 
   useEffect(() => {
-    console.log("Messages updated:", message);
+    if(message){
+      SaveMessages()
+    }
   }, [message]);
+
+
+  const SaveMessages = async() => {
+     const  docRef = doc(db, 'chatHistory', chatId);
+
+     await setDoc(docRef, {
+      chatId: chatId,
+      message: message,
+      userEmail: user?.primaryEmailAddress?.emailAddress,
+      lastUpdated: Date.now()
+     })
+  }
 
   return (
     <div className="relative min-h-screen flex flex-col">
@@ -108,13 +135,13 @@ function ChatInputBox() {
 
       {/* Chat input at bottom */}
       <div className="sticky bottom-0 left-0 w-full flex justify-center px-4 pb-4">
-        <div className="w-full border rounded-xl shadow-md max-w-2xl p-3 flex flex-col gap-3 bg-white/70 backdrop-blur-md">
+        <div className="w-full border rounded-xl shadow-md max-w-2xl p-3 flex flex-col gap-3  backdrop-blur-md">
           {/* Input field */}
           <input
             type="text"
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
-            className="border-0 outline-none w-full px-2 py-2 rounded-md bg-transparent"
+            className="border-0 outline-none w-full px-2 py-2 rounded-md "
             placeholder="Ask me anything..."
           />
 
