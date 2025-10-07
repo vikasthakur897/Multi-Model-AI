@@ -17,6 +17,7 @@ import UsageCreaditProgress from "./UsageCreaditProgress";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/config/FirebaseConfig";
 import moment from "moment/moment";
+import Link from "next/link";
 
 function AppSidebar() {
   const { theme, setTheme } = useTheme();
@@ -108,9 +109,11 @@ function AppSidebar() {
           </div>
 
           {user ? (
+            <Link href={'/'}>
             <Button className="mt-7 w-full" size="lg">
               <Plus /> New Chat
             </Button>
+            </Link>
           ) : (
             <SignInButton>
               <Button className="mt-7 w-full" size="lg">
@@ -132,17 +135,17 @@ function AppSidebar() {
             )}
 
             {chatHistory.map((chat, index) => (
-              <div key={index} className="mt-2 ">
-                <div className="bg-gray-500 p-3 rounded-2xl cursor-pointer">
-                  <h2 className="text-sm text-gray-200 ">
+              <Link href={'?chatId='+ chat.chatId} key={index} className="mt-2 ">
+                <div className="hover:bg-gray-100 p-3 rounded-2xl cursor-pointer">
+                  <h2 className="text-sm text-gray-400  ">
                     {GetLastUserMessageFromChat(chat).lastMsgDate}
                   </h2>
-                  <h2 className="text-lg text-white">
+                  <h2 className="text-lg line-clamp-1">
                     {GetLastUserMessageFromChat(chat).message}
                   </h2>
                 </div>
                 <hr className="my-3" />
-              </div>
+              </Link>
             ))}
           </div>
         </SidebarGroup>

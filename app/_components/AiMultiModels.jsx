@@ -30,8 +30,8 @@ import {
 function AiMultiModels() {
   const { user } = useUser();
   const [aiModelList, setAiModelList] = useState(AiModelList);
-  const { aiSelectedModels, setAiSelectedModels, message, setMessage } =
-    useContext(AiSelectedModelContext);
+  const { aiSelectedModels, setAiSelectedModels, message, setMessage } = useContext(AiSelectedModelContext);
+  
 
   // ✅ Corrected onToggleChange function
   const onToggleChange = (modelName, value) => {
@@ -188,7 +188,7 @@ function AiMultiModels() {
                       </>
                     )}
                   </div>
-                  {m.content !== "Thinking..." && (
+                  {m?.content !== "Thinking..." && m?.content && (
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
                       components={{
@@ -214,7 +214,7 @@ function AiMultiModels() {
                         },
                       }}
                     >
-                      {m.content}
+                      {m?.content}
                     </ReactMarkdown>
                   )}
                 </div>
