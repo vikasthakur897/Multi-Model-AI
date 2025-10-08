@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +18,8 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/config/FirebaseConfig";
 import moment from "moment/moment";
 import Link from "next/link";
+import axios from "axios";
+import { AiSelectedModelContext } from "@/context/AiSelectedModelContext";
 
 function AppSidebar() {
   const { theme, setTheme } = useTheme();
@@ -25,10 +27,18 @@ function AppSidebar() {
   const { user } = useUser();
 
   const [chatHistory, setChatHistory] = useState([])
+  const [freeMsgCount, setFreeMsgCount] = useState(0);
+  
+    const { aiSelectedModels, message, setMessage } = useContext(AiSelectedModelContext);
 
   useEffect(() => {
-    if (user) GetChatHistory();
+    if (user) {GetChatHistory();
+    }
   }, [user])
+
+  useEffect(()=>{
+    GetRemainingTokenMsgs();
+  },[message])
 
   const GetChatHistory = async () => {
     if (!user) return;
@@ -66,6 +76,11 @@ function AppSidebar() {
       message: lastUserMsg,
       lastMsgDate: formattedDate
     }
+  }
+
+  const GetRemainingTokenMsgs=async()=>{
+     const result = await axios.post('/api/user-remaining-msg')
+     setFreeMsgCount(result?.data?.remainingToken)
   }
 
   return (
@@ -161,7 +176,7 @@ function AppSidebar() {
             </SignInButton>
           ) : (
             <div>
-              <UsageCreaditProgress />
+              <UsageCreaditProgress remainingToken={remainingToken} />
               <Button className={'w-full mb-3'}>
                 <Zap /> Upgrade Plan
               </Button>

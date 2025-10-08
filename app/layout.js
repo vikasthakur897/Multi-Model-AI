@@ -2,6 +2,7 @@ import { Outfit, Space_Mono } from "next/font/google";
 import "./globals.css";
 import Provider from "./provider";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "@/components/ui/sonner"
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -27,7 +28,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${outfit.variable} ${spaceMono.variable} antialiased`}
       >
-        <Provider>{children}</Provider>
+        <Provider>{children}  <Toaster /> </Provider>
       </body>
     </html>
     </ClerkProvider>
