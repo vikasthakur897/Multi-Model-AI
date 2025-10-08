@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,6 +19,7 @@ import { db } from "@/config/FirebaseConfig";
 import moment from "moment/moment";
 import Link from "next/link";
 import axios from "axios";
+import { AiSelectedModelContext } from "@/context/AiSelectedModelContext";
 
 function AppSidebar() {
   const { theme, setTheme } = useTheme();
@@ -27,10 +28,17 @@ function AppSidebar() {
 
   const [chatHistory, setChatHistory] = useState([])
   const [freeMsgCount, setFreeMsgCount] = useState(0);
+  
+    const { aiSelectedModels, message, setMessage } = useContext(AiSelectedModelContext);
+
   useEffect(() => {
     if (user) {GetChatHistory();
-    GetRemainingTokenMsgs()}
+    }
   }, [user])
+
+  useEffect(()=>{
+    GetRemainingTokenMsgs();
+  },[message])
 
   const GetChatHistory = async () => {
     if (!user) return;

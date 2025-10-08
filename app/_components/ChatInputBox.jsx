@@ -11,6 +11,7 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/config/FirebaseConfig";
 import { useUser } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
 function ChatInputBox() {
   const [userInput, setUserInput] = useState("");
@@ -95,6 +96,7 @@ function ChatInputBox() {
     const remainingToken = result?.data?.remainingToken
 
     if(remainingToken<=0){
+      toast.error("Maximum Daily Limit Exceed")
       return;
     }
 
