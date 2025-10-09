@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import { Mic, Paperclip, Send } from "lucide-react";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -19,84 +18,69 @@ function ChatInputBox() {
   const { aiSelectedModels, message, setMessage } = useContext(AiSelectedModelContext);
   const params = useSearchParams();
   const { user } = useUser();
-
-  // ⚙️ Track if chat already exists
   const chatExists = useRef(false);
 
-  // ✅ Step 1: Get chatId from URL or create new
   useEffect(() => {
     const idFromParams = params.get("chatId");
-    if (idFromParams) {
-      setChatId(idFromParams);
-    } else {
-      setChatId(uuidv4());
-    }
+    setChatId(idFromParams || uuidv4());
   }, [params]);
 
-  // ✅ Step 2: Load existing chat if available
   useEffect(() => {
-    if (chatId) {
-      GetMessages();
-    }
+    if (chatId) GetMessages();
   }, [chatId]);
 
-  // ✅ Load messages from Firestore
   const GetMessages = async () => {
-    if (!chatId || !db) return;
+    if (!chatId) return;
     try {
       const docRef = doc(db, "chatHistory", chatId);
       const docSnap = await getDoc(docRef);
-
       if (docSnap.exists()) {
-        const docData = docSnap.data();
-        setMessage(docData.message || {});
-        chatExists.current = true; // ✅ mark as existing
+        setMessage(docSnap.data().message || {});
+        chatExists.current = true;
       } else {
-        chatExists.current = false; // ✅ mark as new
+        chatExists.current = false;
       }
     } catch (err) {
       console.error("Error fetching chat:", err);
     }
   };
 
-  // ✅ Step 3: Save messages — only if user sends something new
   useEffect(() => {
     if (message && chatId && chatExists.current) {
       SaveMessages();
     }
   }, [message]);
 
-  // ✅ Save chat history (updates existing or creates new)
   const SaveMessages = async () => {
+    if (!chatId) return;
     try {
-      const docRef = doc(db, "chatHistory", chatId);
       await setDoc(
-        docRef,
+        doc(db, "chatHistory", chatId),
         {
           chatId,
           message,
           userEmail: user?.primaryEmailAddress?.emailAddress || "anonymous",
           lastUpdated: Date.now(),
         },
-        { merge: true } // ✅ update only, don’t overwrite
+        { merge: true }
       );
     } catch (err) {
       console.error("Error saving chat:", err);
     }
   };
 
-  // ✅ Step 4: Handle message send
   const handleSend = async () => {
     if (!userInput.trim()) return;
 
-    // Deduct and check token limit
-    const result = await axios.post('/api/user-remaining-msg', {
-      token: 1
-     });
-    const remainingToken = result?.data?.remainingToken
-
-    if(remainingToken<=0){
-      toast.error("Maximum Daily Limit Exceed")
+    try {
+      const result = await axios.post("/api/user-remaning-msg", { token: 1 });
+      const remainingToken = result?.data?.remainingToken;
+      if (remainingToken <= 0) {
+        toast.error("Maximum Daily Limit Exceeded");
+        return;
+      }
+    } catch {
+      toast.error("Token validation failed");
       return;
     }
 
@@ -117,14 +101,12 @@ function ChatInputBox() {
       return updated;
     });
 
-    // 2️⃣ Only now mark chat as existing
     chatExists.current = true;
 
-    // 3️⃣ Get responses from AI
-    Object.entries(aiSelectedModels).forEach(async ([parentModel, modelInfo]) => {
-      if (!modelInfo?.modelId || !modelInfo?.enable) return;
+    // 2️⃣ Fetch AI response for enabled models
+    for (const [parentModel, modelInfo] of Object.entries(aiSelectedModels)) {
+      if (!modelInfo?.modelId || !modelInfo?.enable) continue;
 
-      // Temporary "thinking" message
       setMessage((prev) => ({
         ...prev,
         [parentModel]: [
@@ -134,18 +116,16 @@ function ChatInputBox() {
       }));
 
       try {
-        const result = await axios.post("/api/ai-multi-model", {
+        const res = await axios.post("/api/ai-multi-model", {
           model: modelInfo.modelId,
           msg: [{ role: "user", content: currentInput }],
           parentModel,
         });
 
-        const { aiResponse, model } = result.data;
-
+        const { aiResponse, model } = res.data;
         setMessage((prev) => {
           const updated = [...(prev[parentModel] ?? [])];
           const loadingIndex = updated.findIndex((m) => m.loading);
-
           if (loadingIndex !== -1) {
             updated[loadingIndex] = {
               role: "assistant",
@@ -154,14 +134,8 @@ function ChatInputBox() {
               loading: false,
             };
           } else {
-            updated.push({
-              role: "assistant",
-              content: aiResponse,
-              model,
-              loading: false,
-            });
+            updated.push({ role: "assistant", content: aiResponse, model, loading: false });
           }
-
           return { ...prev, [parentModel]: updated };
         });
       } catch (err) {
@@ -174,7 +148,7 @@ function ChatInputBox() {
           ],
         }));
       }
-    });
+    }
   };
 
   return (
@@ -192,7 +166,6 @@ function ChatInputBox() {
             className="border-0 outline-none w-full px-2 py-2 rounded-md"
             placeholder="Ask me anything..."
           />
-
           <div className="flex justify-between items-center">
             <Button size="icon" variant="ghost">
               <Paperclip className="h-5 w-5" />
@@ -201,11 +174,7 @@ function ChatInputBox() {
               <Button size="icon" variant="ghost">
                 <Mic className="h-5 w-5" />
               </Button>
-              <Button
-                size="icon"
-                className="bg-gray-500 text-white"
-                onClick={handleSend}
-              >
+              <Button size="icon" className="bg-gray-500 text-white" onClick={handleSend}>
                 <Send className="h-5 w-5" />
               </Button>
             </div>
