@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { AiSelectedModelContext } from "@/context/AiSelectedModelContext";
 import { doc, setDoc, updateDoc, getDoc } from "firebase/firestore";
 import { db } from "@/config/FirebaseConfig";
-import { useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -27,6 +27,8 @@ function AiMultiModels() {
   const { user } = useUser();
   const [aiModelList, setAiModelList] = useState(AiModelList);
   const { aiSelectedModels, setAiSelectedModels, message } = useContext(AiSelectedModelContext);
+
+  const paidUser = user?.publicMetadata?.plan === "unlimited_plan";
 
   // ✅ Toggle model activation
   const onToggleChange = (modelName, value) => {
@@ -126,7 +128,7 @@ function AiMultiModels() {
           </div>
 
           {/* Locked model */}
-          {model.premium && model.enable && (
+          {!paidUser && model.premium && model.enable && (
             <div className="flex items-center justify-center h-full">
               <Button>
                 <Lock /> Upgrade to unlock

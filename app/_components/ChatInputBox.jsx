@@ -1,4 +1,5 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { Mic, Paperclip, Send } from "lucide-react";
 import React, { useContext, useEffect, useRef, useState } from "react";
@@ -20,11 +21,16 @@ function ChatInputBox() {
   const { user } = useUser();
   const chatExists = useRef(false);
 
+  // ✅ Determine if user is a paid user
+  const paidUser = user?.publicMetadata?.plan === "unlimited_plan";
+
+  // ✅ Fetch or create chat ID
   useEffect(() => {
     const idFromParams = params.get("chatId");
     setChatId(idFromParams || uuidv4());
   }, [params]);
 
+  // ✅ Load existing chat messages from Firestore
   useEffect(() => {
     if (chatId) GetMessages();
   }, [chatId]);
@@ -45,6 +51,7 @@ function ChatInputBox() {
     }
   };
 
+  // ✅ Auto-save messages when they change
   useEffect(() => {
     if (message && chatId && chatExists.current) {
       SaveMessages();
@@ -69,15 +76,18 @@ function ChatInputBox() {
     }
   };
 
+  // ✅ Handle message send
   const handleSend = async () => {
     if (!userInput.trim()) return;
 
     try {
-      const result = await axios.post("/api/user-remaning-msg", { token: 1 });
-      const remainingToken = result?.data?.remainingToken;
-      if (remainingToken <= 0) {
-        toast.error("Maximum Daily Limit Exceeded");
-        return;
+      if (!paidUser) {
+        const result = await axios.post("/api/user-remaning-msg", { token: 1 });
+        const remainingToken = result?.data?.remainingToken;
+        if (remainingToken <= 0) {
+          toast.error("Maximum Daily Limit Exceeded");
+          return;
+        }
       }
     } catch {
       toast.error("Token validation failed");
@@ -123,6 +133,7 @@ function ChatInputBox() {
         });
 
         const { aiResponse, model } = res.data;
+
         setMessage((prev) => {
           const updated = [...(prev[parentModel] ?? [])];
           const loadingIndex = updated.findIndex((m) => m.loading);
@@ -134,7 +145,12 @@ function ChatInputBox() {
               loading: false,
             };
           } else {
-            updated.push({ role: "assistant", content: aiResponse, model, loading: false });
+            updated.push({
+              role: "assistant",
+              content: aiResponse,
+              model,
+              loading: false,
+            });
           }
           return { ...prev, [parentModel]: updated };
         });
@@ -174,7 +190,11 @@ function ChatInputBox() {
               <Button size="icon" variant="ghost">
                 <Mic className="h-5 w-5" />
               </Button>
-              <Button size="icon" className="bg-gray-500 text-white" onClick={handleSend}>
+              <Button
+                size="icon"
+                className="bg-gray-500 text-white"
+                onClick={handleSend}
+              >
                 <Send className="h-5 w-5" />
               </Button>
             </div>
