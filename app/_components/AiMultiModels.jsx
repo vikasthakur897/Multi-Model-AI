@@ -28,7 +28,8 @@ function AiMultiModels() {
   const [aiModelList, setAiModelList] = useState(AiModelList);
   const { aiSelectedModels, setAiSelectedModels, message } = useContext(AiSelectedModelContext);
 
-  const paidUser = user?.publicMetadata?.plan === "unlimited_plan";
+  const { isSignedIn } = useAuth();
+
 
   // ✅ Toggle model activation
   const onToggleChange = (modelName, value) => {
@@ -128,7 +129,7 @@ function AiMultiModels() {
           </div>
 
           {/* Locked model */}
-          {!paidUser && model.premium && model.enable && (
+          {!isSignedIn && user?.publicMetadata?.plan !== "unlimited_plan" && model.premium && model.enable && (
             <div className="flex items-center justify-center h-full">
               <Button>
                 <Lock /> Upgrade to unlock

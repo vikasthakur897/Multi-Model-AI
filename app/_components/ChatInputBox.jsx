@@ -9,7 +9,7 @@ import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/config/FirebaseConfig";
-import { useUser } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
@@ -21,8 +21,8 @@ function ChatInputBox() {
   const { user } = useUser();
   const chatExists = useRef(false);
 
-  // ✅ Determine if user is a paid user
-  const paidUser = user?.publicMetadata?.plan === "unlimited_plan";
+
+  const { isSignedIn } =  useAuth();
 
   // ✅ Fetch or create chat ID
   useEffect(() => {
@@ -81,7 +81,7 @@ function ChatInputBox() {
     if (!userInput.trim()) return;
 
     try {
-      if (!paidUser) {
+      if (!isSignedIn && user?.publicMetadata?.plan !== "unlimited_plan") {
         const result = await axios.post("/api/user-remaning-msg", { token: 1 });
         const remainingToken = result?.data?.remainingToken;
         if (remainingToken <= 0) {

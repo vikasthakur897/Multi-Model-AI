@@ -11,7 +11,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Moon, Plus, Sun, User2, Zap } from "lucide-react";
 import { useTheme } from "next-themes";
-import { SignInButton, useUser } from "@clerk/nextjs";
+import { SignInButton, useAuth, useUser } from "@clerk/nextjs";
 import UsageCreaditProgress from "./UsageCreaditProgress";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/config/FirebaseConfig";
@@ -29,7 +29,7 @@ function AppSidebar() {
   const [freeMsgCount, setFreeMsgCount] = useState(0);
   const { message } = useContext(AiSelectedModelContext);
 
-  const paidUser = user?.publicMetadata?.plan === "unlimited_plan";
+  const { isSignedIn } =  useAuth();
 
   useEffect(() => setMounted(true), []);
 
@@ -165,7 +165,7 @@ function AppSidebar() {
             </SignInButton>
           ) : (
             <div>
-              {!paidUser && (
+              {!isSignedIn && user?.publicMetadata?.plan !== "unlimited_plan" && (
                 <div>
                   <UsageCreaditProgress remainingToken={freeMsgCount} />
                   <PricingModal>
